@@ -1,6 +1,6 @@
 {
-	"name": "zed1/wds-multisite-aggregate",
-	"version": "1.0.3",
+	"name": "mikelittle/wds-multisite-aggregate",
+	"version": "1.0.3.1",
 	"description": "WDS Multisite Aggregate - A central area where all the posts on a WordPress MS network can be collected.",
 	"keywords": ["wordpress", "plugin", "multisite", "aggregate"],
 	"homepage": "https://github.com/WebDevStudios/WDS-Multisite-Aggregate",
