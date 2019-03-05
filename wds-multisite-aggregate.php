@@ -3,7 +3,7 @@
 Plugin Name: WDS Multisite Aggregate
 Plugin URI: https://github.com/WebDevStudios/WDS-Multisite-Aggregate
 Description: Creates a blog where all the most recent posts on a WordPress network may be found. Based on WordPress MU Sitewide Tags Pages plugin by Donncha O Caoimh. WP-CLI: `wp multisite_aggregate --help`.
-Version: 1.0.2
+Version: 1.0.3.2
 Author: WebDevStudios
 Author URI: http://webdevstudios.com
 */
@@ -146,7 +146,7 @@ class WDS_Multisite_Aggregate {
 
 			$post_count  = 0;
 			$_post_count = 0;
-			$result      = wp_remote_get( $url );
+			$result      = wp_remote_get( $url, ['timeout'=>180] );
 			if ( is_wp_error( $result ) ) {
 				wp_die( $result->get_error_message() );
 			}
@@ -228,12 +228,17 @@ class WDS_Multisite_Aggregate {
 
 		$posts_done = 0;
 		$post_count = isset( $args['post_count'] ) ? (int) $args['post_count'] : 0; // post count
-		while ( $posts_done < 300 ) {
+		$allowed_post_types = apply_filters( 'sitewide_tags_allowed_post_types', array( 'post' => true ) );
+		$post_types = array_keys(array_filter($allowed_post_types, function ( $e ) { return $e; } ) );
+		$max_posts_per_loop = 1000;
+		$max_posts_per_query = $max_posts_per_loop / 10;
+		while ( $posts_done < $max_posts_per_loop ) {
 			$args = array(
 				'fields'         => 'ids',
 				'offset'         => $post_count + $posts_done,
-				'posts_per_page' => 50,
+				'posts_per_page' => $max_posts_per_query,
 				'post_status'    => 'publish',
+				'post_type'      => $post_types,
 			);
 			$posts = get_posts( $args );
 
@@ -253,7 +258,7 @@ class WDS_Multisite_Aggregate {
 					}
 				}
 			}
-			$posts_done += 50;
+			$posts_done += $max_posts_per_query;
 		}
 
 		return $this->success( array(
